@@ -19,6 +19,7 @@ The bidders do not want to reveal their identity: their assets and transaction h
 3. The seller delivers the product to the bidder. 
 
 ## TODO: Web Experience 
+[UIUX Wireframe](https://www.figma.com/file/wxviF587huUbnDd6lxVcQl/Untitled?node-id=2%3A425)
 1. Connect wallet once in the web. 
 2. Add project screen. (Seller)
 3. Place a bid screen. (Bidder)
