@@ -62,6 +62,8 @@ export class Auction extends SmartContract {
   }
 
   @method bid(price: Field) {
+    // check if the bid is over 
+    this.accepted.assertEquals(Boolean(false));
     // check if the new bid is valid 
     price.assertGt(this.highestBid.get()); 
     // update the highest bid
@@ -96,7 +98,14 @@ export class Auction extends SmartContract {
   }
 
   @method accept() {
+    if (!Mina.currentTransaction?.sender) {
+      throw new Error('Invalid sender for the current transaction.');
+    }
+    const user = Mina.currentTransaction.sender.toPublicKey();
+    this.seller.assertEquals(user); 
 
+    // set the deal to be accepted 
+    this.accepted.set(Boolean(true));
   }
 
   @method buy() {
