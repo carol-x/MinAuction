@@ -9,7 +9,8 @@ import {
   arrayProp,
   isReady,
   Poseidon,
-  Mina
+  Mina, 
+  UInt64,
 } from 'snarkyjs';
 
 export { 
@@ -40,7 +41,7 @@ class Bidder extends CircuitValue {
 
 export class Auction extends SmartContract {
   // store the current best bid
-  @state(Field) highestBid = State<Field>();
+  @state(Field) highestBid = State<UInt64>();
   // store the current bidder secret hash 
   @state(Field) bidderHash = State<Field>();
   // store the status of the current auction 
@@ -52,7 +53,7 @@ export class Auction extends SmartContract {
   // seller of the auction 
   @state(Field) seller = State<PublicKey>();
 
-  @method init(initialPrice: Field) {
+  @method init(initialPrice: UInt64) {
     // set lowest price to initialize
     this.highestBid.set(initialPrice);
     // bidder as 0x0000, null address 
@@ -61,13 +62,11 @@ export class Auction extends SmartContract {
     this.accepted.set(Boolean(false));
   }
 
-  @method bid(price: Field) {
+  @method bid(price: UInt64) {
     // check if the bid is over 
     this.accepted.assertEquals(Boolean(false));
     // check if the new bid is valid 
     price.assertGt(this.highestBid.get()); 
-    // update the highest bid
-    this.highestBid.set(price); 
 
     // confirm the identity of the buyer
     if (!Mina.currentTransaction?.sender) {
@@ -75,7 +74,13 @@ export class Auction extends SmartContract {
     }
     const buyerPublicKey = Mina.currentTransaction.sender.toPublicKey();
 
+    // confirm bidder payability
+    Mina.getBalance(buyerPublicKey).assertGt(price); 
 
+    // update the highest bid
+    this.highestBid.set(price); 
+
+    // encrypt buyer identity
     const buyer = new Bidder(buyerPublicKey as unknown as Field);
     this.bidderHash.set(buyer.hash());
   }
